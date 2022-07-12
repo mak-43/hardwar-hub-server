@@ -46,6 +46,14 @@ async function run() {
             const tools = await productCollection.find().toArray()
             res.send(tools)
         })
+        //post tools 
+        app.post('/addproduct',async(req,res)=>{
+
+            const product = req.body
+            const result = await productCollection.insertOne(product)
+            res.send(result)
+        })
+
         //get last 6 upload tools 
         app.get('/updatetools',async(req,res)=>{
             const query={}
