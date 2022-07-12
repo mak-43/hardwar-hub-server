@@ -43,8 +43,9 @@ async function run() {
 
         //get all tools
         app.get('/tools', async (req, res) => {
-            const tools = await productCollection.find().toArray()
-            res.send(tools)
+            cursor=productCollection.find().sort({$natural:-1})
+            const product=await cursor.toArray()
+            res.send(product)
         })
         //post tools 
         app.post('/addproduct',async(req,res)=>{
