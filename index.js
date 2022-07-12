@@ -41,16 +41,33 @@ async function run() {
         const updateproCollection = client.db('Assignment-12').collection('updatepro')
         const userCollection = client.db('Assignment-12').collection('user')
 
+        //get all tools
         app.get('/tools', async (req, res) => {
             const tools = await productCollection.find().toArray()
             res.send(tools)
         })
+        //get last 6 upload tools 
+        app.get('/updatetools',async(req,res)=>{
+            const query={}
+            const cursor=productCollection.find().limit(6).sort({$natural:-1})
+            const product=await cursor.toArray()
+            res.send(product)
+        })
 
+        //tools for purchase
         app.get('/tools/:id', async (req, res) => {
             const id = req.params.id
             const query = { _id: ObjectId(id) }
             const product = await productCollection.findOne(query)
             res.send(product)
+        })
+
+        //tools delete 
+        app.delete('/product/:id',async(req,res)=>{
+            const id=req.params.id 
+            const query={_id:ObjectId(id)}
+            const result=await productCollection.deleteOne(query)
+            res.send(result)
         })
 
         app.post('/order', async (req, res) => {
