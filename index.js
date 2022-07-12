@@ -59,6 +59,7 @@ async function run() {
             res.send(result)
         })
 
+        //user base order 
         app.get('/order', verifyJWT, async (req, res) => {
             const email = req.query.email
             const decodedEmail = req.decoded.email
@@ -72,6 +73,19 @@ async function run() {
             }
 
 
+        })
+
+        app.get('/orders',verifyJWT,async(req,res)=>{
+
+            const result=await orderCollection.find().toArray()
+            res.send(result)
+
+        })
+        app.delete('/order/:id',async(req,res)=>{
+            const id=req.params.id 
+            const query={_id:ObjectId(id)}
+            const result=await orderCollection.deleteOne(query)
+            res.send(result)
         })
 
         app.get('/payment/:id', async (req, res) => {
@@ -138,6 +152,7 @@ async function run() {
             }
 
         })
+        //checek admin for useAdmin
         app.get('/admin/:email',async(req,res)=>{
             const email=req.params.email 
             const user=await userCollection.findOne({email:email})
