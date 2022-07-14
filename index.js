@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken')
 const app = express()
 const port = process.env.PORT || 5000
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-
+const stripe=require('stripe')(process.env.STRIPE_SECRET_KEY)
 
 
 app.use(cors())
@@ -38,9 +38,42 @@ async function run() {
 
         const productCollection = client.db('Assignment-12').collection('tools')
         const orderCollection = client.db('Assignment-12').collection('orders')
+        const paymentsCollection = client.db('Assignment-12').collection('payments')
         const updateproCollection = client.db('Assignment-12').collection('updatepro')
         const userCollection = client.db('Assignment-12').collection('user')
 
+        //payment 
+        app.post('/create-payment-intent',verifyJWT,async(req,res)=>{
+            const {price}=req.body;
+            const amount=price*100 
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount:amount,
+                currency: "usd",
+                payment_method_types:['card']
+               
+              });
+              res.send({
+                clientSecret:paymentIntent.client_secret
+              })
+
+        })
+        //payment update 
+        app.patch('/payment/:id',verifyJWT,async(req,res)=>{
+            const id=req.params.id
+            const payment=req.body
+            const filter={_id:ObjectId(id)} 
+            const updatedDoc={
+                $set:{
+                    paid:true,
+                    tid:payment.tid
+
+                }
+            }
+            const result =await paymentsCollection.insertOne(payment)
+            const updatedPayment= await orderCollection.updateOne(filter,updatedDoc)
+            res.send(updatedDoc)
+
+        })
         //get all tools
         app.get('/tools', async (req, res) => {
             cursor=productCollection.find().sort({$natural:-1})
@@ -114,7 +147,7 @@ async function run() {
             res.send(result)
         })
 
-        app.get('/payment/:id', async (req, res) => {
+        app.get('/payment/:id', verifyJWT,async (req, res) => {
             const id = req.params.id
             const query = { _id: ObjectId(id) }
             const result = await orderCollection.findOne(query)
