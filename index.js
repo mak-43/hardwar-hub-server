@@ -41,7 +41,20 @@ async function run() {
         const paymentsCollection = client.db('Assignment-12').collection('payments')
         const updateproCollection = client.db('Assignment-12').collection('updatepro')
         const userCollection = client.db('Assignment-12').collection('user')
+        const reviewsCollection = client.db('Assignment-12').collection('reviews')
 
+        //post review 
+        app.post('/postreview',async(req,res)=>{
+            const review = req.body
+            const result = await reviewsCollection.insertOne(review)
+            res.send(result)
+        })
+        //get review 
+        app.get('/getreview',async(req,res)=>{
+            const cursor=reviewsCollection.find().limit(6).sort({$natural:-1})
+            const product=await cursor.toArray()
+            res.send(product)
+        })
         //payment 
         app.post('/create-payment-intent',verifyJWT,async(req,res)=>{
             const {price}=req.body;
