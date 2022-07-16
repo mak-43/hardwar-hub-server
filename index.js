@@ -8,9 +8,21 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const stripe=require('stripe')(process.env.STRIPE_SECRET_KEY)
 
 ///middleware
-app.use(cors())
-app.use(express.json())
 
+app.use(express.json())
+app.use(cors({
+    origin: function(origin, callback){
+      // allow requests with no origin 
+      // (like mobile apps or curl requests)
+      if(!origin) return callback(null, true);
+      if(allowedOrigins.indexOf(origin) === -1){
+        var msg = 'The CORS policy for this site does not ' +
+                  'allow access from the specified Origin.';
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    }
+  }));
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.bxqusfm.mongodb.net/?retryWrites=true&w=majority`;
