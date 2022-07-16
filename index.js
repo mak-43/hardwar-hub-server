@@ -27,6 +27,7 @@ function verifyJWT(req, res, next) {
             return res.status(403).send({ message: 'Forbidden access' })
         }
         req.decoded = decoded
+  
         next()
 
     })
@@ -51,9 +52,29 @@ async function run() {
         })
         //get review 
         app.get('/getreview',async(req,res)=>{
-            const cursor=reviewsCollection.find().limit(6).sort({$natural:-1})
-            const product=await cursor.toArray()
+          
+            const page=parseInt(req.query.page)
+            const size=parseInt(req.query.size)
+
+            const query={}
+            const cursor=reviewsCollection.find(query).sort({$natural:-1})
+            let product
+            if(page||size){
+                product=await cursor.skip(page*size).limit(size).toArray()
+            }
+            else{
+                product=await cursor.toArray()
+            }
+        
             res.send(product)
+        })
+        //paginate review 
+        app.get('/count',async(req,res)=>{
+        
+           
+            const count=await reviewsCollection.estimatedDocumentCount()
+            res.send({count})
+            
         })
         //payment 
         app.post('/create-payment-intent',verifyJWT,async(req,res)=>{
@@ -87,6 +108,24 @@ async function run() {
             res.send(updatedDoc)
 
         })
+        //order shipped 
+        app.put('/shipped/:id',verifyJWT,async(req,res)=>{
+            const id=req.params.id
+            const options = { upsert: true }
+            const filter={_id:ObjectId(id)} 
+            const updatedDoc={
+                $set:{
+                    shipped:true
+
+                }
+            }
+          
+            const updatedPayment= await orderCollection.updateOne(filter, updatedDoc, options)
+            res.send(updatedDoc)
+
+        })
+        
+           
         //get all tools
         app.get('/tools', async (req, res) => {
             cursor=productCollection.find().sort({$natural:-1})
@@ -135,6 +174,7 @@ async function run() {
         app.get('/order', verifyJWT, async (req, res) => {
             const email = req.query.email
             const decodedEmail = req.decoded.email
+        
             if (email == decodedEmail) {
                 const query = { email: email }
                 const pro = await orderCollection.find(query).toArray()
@@ -228,7 +268,7 @@ async function run() {
         app.get('/admin/:email',async(req,res)=>{
             const email=req.params.email 
             const user=await userCollection.findOne({email:email})
-            const isAdmin=user.role==='admin'
+            const isAdmin=user?.role==='admin'
             res.send({admin:isAdmin})
         })
 
