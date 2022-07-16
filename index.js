@@ -50,7 +50,7 @@ async function run() {
             const result = await reviewsCollection.insertOne(review)
             res.send(result)
         })
-        //get review 
+        //get review  sf 
         app.get('/getreview',async(req,res)=>{
           
             const page=parseInt(req.query.page)
