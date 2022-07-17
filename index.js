@@ -215,12 +215,16 @@ async function run() {
 
         app.put('/updatepro', async (req, res) => {
             const update = req.body
-            // console.log(update)
+       
             const filter = { email: update.email }
             const options = { upsert: true }
             const updateDoc = {
                 $set: update
             }
+            const img={
+                $set:{photo:update.img,email:update.email}
+            }
+            const user= await userCollection.updateOne(filter,img,options)
             const result = await updateproCollection.updateOne(filter, updateDoc, options)
             res.send(result)
         })
