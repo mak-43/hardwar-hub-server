@@ -74,7 +74,7 @@ async function run() {
         
             res.send(product)
         })
-        //review user profile 
+        //review user base profile 
         app.get('/pro', async (req, res) => {
             const email = req.query.email
             const query = { email: email }
