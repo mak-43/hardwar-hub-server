@@ -74,6 +74,13 @@ async function run() {
         
             res.send(product)
         })
+        //review user profile 
+        app.get('/pro', async (req, res) => {
+            const email = req.query.email
+            const query = { email: email }
+            const pro = await userCollection.find(query).toArray()
+            res.send(pro)
+        })
         //paginate review 
         app.get('/count',async(req,res)=>{
         
@@ -225,6 +232,7 @@ async function run() {
                 $set:{photo:update.img,email:update.email}
             }
             const user= await userCollection.updateOne(filter,img,options)
+            const review= await reviewsCollection.updateOne(filter,img,options)
             const result = await updateproCollection.updateOne(filter, updateDoc, options)
             res.send(result)
         })
